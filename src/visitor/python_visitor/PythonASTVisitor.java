@@ -27,18 +27,33 @@ public class PythonASTVisitor extends python_parserBaseVisitor<Node> {
         return program;
     }
 
-    @Override public Node visitSIf(python_parser.SIfContext ctx)               { return visit(ctx.ifStmt()); }
-    @Override public Node visitSWhile(python_parser.SWhileContext ctx)         { return visit(ctx.whileStmt()); }
-    @Override public Node visitSFor(python_parser.SForContext ctx)             { return visit(ctx.forStmt()); }
-    @Override public Node visitSTry(python_parser.STryContext ctx)             { return visit(ctx.tryStmt()); }
-    @Override public Node visitSWith(python_parser.SWithContext ctx)           { return visit(ctx.withStmt()); }
-    @Override public Node visitSFunc(python_parser.SFuncContext ctx)           { return visit(ctx.funcDef()); }
-    @Override public Node visitSClass(python_parser.SClassContext ctx)         { return visit(ctx.classDef()); }
-    @Override public Node visitSDecorated(python_parser.SDecoratedContext ctx) { return visit(ctx.decorated()); }
-    @Override public Node visitSAugAssign(python_parser.SAugAssignContext ctx) { return visit(ctx.augAssign()); }
-    @Override public Node visitSAssign(python_parser.SAssignContext ctx)       { return visit(ctx.assign()); }
-    @Override public Node visitSGlobal(python_parser.SGlobalContext ctx)       { return visit(ctx.globalStmt()); }
-    @Override public Node visitSNonlocal(python_parser.SNonlocalContext ctx)   { return visit(ctx.nonlocalStmt()); }
+    @Override public Node visitSIf(python_parser.SIfContext ctx)
+    {
+        return visit(ctx.ifStmt()); }
+    @Override public Node visitSWhile(python_parser.SWhileContext ctx)
+    {
+        return visit(ctx.whileStmt()); }
+    @Override public Node visitSFor(python_parser.SForContext ctx)
+    {
+        return visit(ctx.forStmt()); }
+    @Override public Node visitSTry(python_parser.STryContext ctx)
+    { return visit(ctx.tryStmt()); }
+    @Override public Node visitSWith(python_parser.SWithContext ctx)
+    { return visit(ctx.withStmt()); }
+    @Override public Node visitSFunc(python_parser.SFuncContext ctx)
+    { return visit(ctx.funcDef()); }
+    @Override public Node visitSClass(python_parser.SClassContext ctx)
+    { return visit(ctx.classDef()); }
+    @Override public Node visitSDecorated(python_parser.SDecoratedContext ctx)
+    { return visit(ctx.decorated()); }
+    @Override public Node visitSAugAssign(python_parser.SAugAssignContext ctx)
+    { return visit(ctx.augAssign()); }
+    @Override public Node visitSAssign(python_parser.SAssignContext ctx)
+    { return visit(ctx.assign()); }
+    @Override public Node visitSGlobal(python_parser.SGlobalContext ctx)
+    { return visit(ctx.globalStmt()); }
+    @Override public Node visitSNonlocal(python_parser.SNonlocalContext ctx)
+    { return visit(ctx.nonlocalStmt()); }
 
     @Override
     public Node visitGlobalStatement(python_parser.GlobalStatementContext ctx) {
@@ -46,7 +61,7 @@ public class PythonASTVisitor extends python_parserBaseVisitor<Node> {
         for (org.antlr.v4.runtime.tree.TerminalNode idNode
                 : ctx.getTokens(python_parser.IDENTIFIER)) {
             String name = idNode.getText();
-            // سجّل في الـ scope الحالي إنه global reference
+
             SymbolRow row = symbolTable.lookupCurrentScope(name);
             if (row == null) {
                 row = symbolTable.insert(name);
@@ -55,7 +70,7 @@ public class PythonASTVisitor extends python_parserBaseVisitor<Node> {
             row.setType("global");
             row.setAttribute("global", true);
 
-            // وأشّر على الـ global scope إنه هاد المتغير بيتشارك
+
             SymbolRow globalRow = symbolTable.lookupGlobal(name);
             if (globalRow != null) {
                 globalRow.setAttribute("sharedAsGlobal", true);
@@ -95,10 +110,7 @@ public class PythonASTVisitor extends python_parserBaseVisitor<Node> {
     public Node visitSContinue(python_parser.SContinueContext ctx) {
         return new ContinueStmtNode(ctx.getStart().getLine());
     }
-
-    // ══════════════════════════════════════════════════════════
     // IMPORT
-    // ══════════════════════════════════════════════════════════
     @Override
     public Node visitSImport(python_parser.SImportContext ctx) {
         return visit(ctx.importStmt());
@@ -126,7 +138,7 @@ public class PythonASTVisitor extends python_parserBaseVisitor<Node> {
         int line = ctx.getStart().getLine();
         ExprNode moduleNode = (ExprNode) visit(ctx.dottedName());
 
-        // سجّل اسم الموديول
+
         if (ctx.dottedName() != null) {
             String moduleName = ctx.dottedName().getText();
             SymbolRow modRow = symbolTable.lookup(moduleName);
@@ -164,10 +176,7 @@ public class PythonASTVisitor extends python_parserBaseVisitor<Node> {
         }
         return new ImportItem(nameNode, aliasText);
     }
-
-    // ══════════════════════════════════════════════════════════
     // RETURN
-    // ══════════════════════════════════════════════════════════
     @Override
     public Node visitSReturn(python_parser.SReturnContext ctx) {
         int line = ctx.getStart().getLine();
@@ -187,10 +196,7 @@ public class PythonASTVisitor extends python_parserBaseVisitor<Node> {
         }
         return new ReturnStmtNode(line, returnValue);
     }
-
-    // ══════════════════════════════════════════════════════════
     // BLOCK
-    // ══════════════════════════════════════════════════════════
     @Override
     public Node visitBlockIndented(python_parser.BlockIndentedContext ctx) {
         BlockStmtNode block = new BlockStmtNode(ctx.getStart().getLine());
@@ -208,10 +214,7 @@ public class PythonASTVisitor extends python_parserBaseVisitor<Node> {
         if (stmt != null) block.addStatement(stmt);
         return block;
     }
-
-    // ══════════════════════════════════════════════════════════
     // DOTTED NAME
-    // ══════════════════════════════════════════════════════════
     @Override
     public Node visitDottedId(python_parser.DottedIdContext ctx) {
         ExprNode current = new IdentifierNode(
@@ -225,10 +228,7 @@ public class PythonASTVisitor extends python_parserBaseVisitor<Node> {
         }
         return current;
     }
-
-    // ══════════════════════════════════════════════════════════
-    // IF  — بدون allocate/free لأن Python ما عندها block scope
-    // ══════════════════════════════════════════════════════════
+    // IF
     @Override
     public Node visitIfStatement(python_parser.IfStatementContext ctx) {
         int line = ctx.getStart().getLine();
@@ -249,10 +249,7 @@ public class PythonASTVisitor extends python_parserBaseVisitor<Node> {
 
         return ifStmtNode;
     }
-
-    // ══════════════════════════════════════════════════════════
     // WHILE — بدون allocate/free
-    // ══════════════════════════════════════════════════════════
     @Override
     public Node visitWhileStatement(python_parser.WhileStatementContext ctx) {
         int line = ctx.getStart().getLine();
@@ -264,9 +261,6 @@ public class PythonASTVisitor extends python_parserBaseVisitor<Node> {
         return whileNode;
     }
 
-    // ══════════════════════════════════════════════════════════
-    // FOR — يفتح scope لأن متغير الـ loop يُعرَّف هنا
-    // ══════════════════════════════════════════════════════════
     @Override
     public Node visitForStatement(python_parser.ForStatementContext ctx) {
         int line = ctx.getStart().getLine();
@@ -276,7 +270,7 @@ public class PythonASTVisitor extends python_parserBaseVisitor<Node> {
             String name = tok.getText();
             targetNodes.add(new IdentifierNode(tok.getLine(), name));
 
-            // سجّل متغير الـ loop في الـ scope الحالي (Python scope rules)
+
             SymbolRow row = symbolTable.lookup(name);
             if (row == null) {
                 row = symbolTable.insert(name);
@@ -290,10 +284,7 @@ public class PythonASTVisitor extends python_parserBaseVisitor<Node> {
         BlockStmtNode bodyNode     = (BlockStmtNode) visit(ctx.body);
         return new ForStmtNode(line, targetNodes, iterableNode, bodyNode);
     }
-
-    // ══════════════════════════════════════════════════════════
     // WITH
-    // ══════════════════════════════════════════════════════════
     @Override
     public Node visitWithStatement(python_parser.WithStatementContext ctx) {
         int line = ctx.getStart().getLine();
@@ -317,32 +308,21 @@ public class PythonASTVisitor extends python_parserBaseVisitor<Node> {
         }
         return withStmtNode;
     }
-
-    // ══════════════════════════════════════════════════════════
     // TRY
-    // ══════════════════════════════════════════════════════════
     @Override
     public Node visitTryStatement(python_parser.TryStatementContext ctx) {
         int line = ctx.getStart().getLine();
         BlockStmtNode tryBodyNode  = (BlockStmtNode) visit(ctx.tryBody);
         TryStmtNode   tryStmtNode  = new TryStmtNode(line, tryBodyNode);
 
-        // كل except clause له excType واحد و excAlias واحد في الـ grammar
-        // excBody هو الـ list (+=)
         int numExcepts = ctx.excBody != null ? ctx.excBody.size() : 0;
 
         for (int i = 0; i < numExcepts; i++) {
             ExprNode typeNode  = null;
             String   aliasText = null;
-
-            // excType=expr? — مش list، يعني نستخدمها مباشرة فقط للـ except الأول
-            // لكن لو عندنا أكثر من except يجب إنك تصلح الـ grammar لتصير +=
-            // في هالحالة نتعامل معها كما هي
             if (i == 0 && ctx.excType != null) {
                 typeNode = (ExprNode) visit(ctx.excType);
             }
-
-            // excAlias=IDENTIFIER? — مش list كمان
             if (i == 0 && ctx.excAlias != null) {
                 aliasText = ctx.excAlias.getText();
                 SymbolRow row = symbolTable.insert(aliasText);
@@ -361,22 +341,14 @@ public class PythonASTVisitor extends python_parserBaseVisitor<Node> {
 
         return tryStmtNode;
     }
-
-    // ══════════════════════════════════════════════════════════
     // FUNCTION DEFINITION
-    // يفتح scope جديد للدالة — هو الـ scope الصحيح
-    // ══════════════════════════════════════════════════════════
     @Override
     public Node visitFuncDefinition(python_parser.FuncDefinitionContext ctx) {
         int    line         = ctx.getStart().getLine();
         String functionName = ctx.name != null ? ctx.name.getText() : "anonymous";
-
-        // سجّل اسم الدالة في الـ scope الخارجي
         SymbolRow funcRow = symbolTable.insert(functionName);
         funcRow.setType("function");
         funcRow.setLine(line);
-
-        // افتح scope جديد للدالة
         symbolTable.allocate("function:" + functionName);
 
         List<ParamNode> paramNodes = new ArrayList<>();
@@ -388,18 +360,14 @@ public class PythonASTVisitor extends python_parserBaseVisitor<Node> {
         }
 
         BlockStmtNode bodyNode = ctx.body != null ? (BlockStmtNode) visit(ctx.body) : null;
-
-        // أضف عدد الـ params للـ symbol row
         funcRow.setAttribute("paramCount", paramNodes.size());
 
         symbolTable.free();
 
         return new FunctionDefNode(line, functionName, paramNodes, bodyNode, new ArrayList<>());
     }
-
-    // ══════════════════════════════════════════════════════════
     // PARAMETERS
-    // ══════════════════════════════════════════════════════════
+
     @Override
     public Node visitParamList(python_parser.ParamListContext ctx) { return null; }
 
@@ -417,9 +385,8 @@ public class PythonASTVisitor extends python_parserBaseVisitor<Node> {
         return new ParamNode(line, paramName, defaultVal);
     }
 
-    // ══════════════════════════════════════════════════════════
     // DECORATORS
-    // ══════════════════════════════════════════════════════════
+
     @Override
     public Node visitDecoratorExpr(python_parser.DecoratorExprContext ctx) {
         int line = ctx.getStart().getLine();
@@ -446,10 +413,7 @@ public class PythonASTVisitor extends python_parserBaseVisitor<Node> {
         }
         return funcNode;
     }
-
-    // ══════════════════════════════════════════════════════════
     // CLASS DEFINITION
-    // ══════════════════════════════════════════════════════════
     @Override
     public Node visitClassDefinition(python_parser.ClassDefinitionContext ctx) {
         int    line      = ctx.getStart().getLine();
@@ -470,18 +434,14 @@ public class PythonASTVisitor extends python_parserBaseVisitor<Node> {
         }
 
         BlockStmtNode bodyNode = (BlockStmtNode) visit(ctx.body);
-
-        // سجّل عدد الـ base classes
         classRow.setAttribute("baseCount", bases.size());
 
         symbolTable.free();
 
         return new ClassDefNode(line, className, bases, bodyNode);
     }
-
-    // ══════════════════════════════════════════════════════════
     // ASSIGNMENTS
-    // ══════════════════════════════════════════════════════════
+
     @Override
     public Node visitAssignStmt(python_parser.AssignStmtContext ctx) {
         int      line       = ctx.getStart().getLine();
@@ -501,10 +461,6 @@ public class PythonASTVisitor extends python_parserBaseVisitor<Node> {
         return new AugAssignStmtNode(line, targetNode, operator, valueNode);
     }
 
-    /**
-     * يسجّل المتغير في الـ symbol table إذا الـ target هو IDENTIFIER بسيط.
-     * valueNode: نستخدمه لاستنتاج النوع (inferredType)
-     */
     private void insertPostfixTarget(python_parser.PostfixContext targetCtx,
                                      int line, ExprNode valueNode) {
         if (!(targetCtx instanceof python_parser.AtomIdContext)) return;
@@ -513,7 +469,7 @@ public class PythonASTVisitor extends python_parserBaseVisitor<Node> {
 
         SymbolRow row = symbolTable.lookupCurrentScope(varName);
         if (row == null) {
-            // لو مش موجود في الـ scope الحالي، ابحث في الـ outer
+
             row = symbolTable.lookup(varName);
         }
         if (row == null) {
@@ -522,16 +478,12 @@ public class PythonASTVisitor extends python_parserBaseVisitor<Node> {
             row.setLine(line);
         }
 
-        // استنتاج نوع القيمة المسندة
         if (valueNode != null) {
             String inferredType = inferType(valueNode);
             if (inferredType != null) row.setAttribute("inferredType", inferredType);
         }
     }
 
-    /**
-     * يستنتج نوع القيمة من نوع الـ node
-     */
     private String inferType(ExprNode node) {
         if (node instanceof NumberNode)  return "number";
         if (node instanceof StringNode)  return "string";
@@ -544,10 +496,8 @@ public class PythonASTVisitor extends python_parserBaseVisitor<Node> {
         if (node instanceof LambdaExprNode) return "lambda";
         return null;
     }
-
-    // ══════════════════════════════════════════════════════════
     // EXPRESSIONS: Math, Logic, Comparison
-    // ══════════════════════════════════════════════════════════
+
     @Override
     public Node visitAddSub(python_parser.AddSubContext ctx) {
         return new BinaryExprNode(ctx.getStart().getLine(),
@@ -594,14 +544,14 @@ public class PythonASTVisitor extends python_parserBaseVisitor<Node> {
                 new BinaryExprNode(line, tTrue, "ternary_else", tFalse));
     }
 
-    // ══════════════════════════════════════════════════════════
+
     // POSTFIX & MEMBER ACCESS
-    // ══════════════════════════════════════════════════════════
+
     @Override
     public Node visitAtomId(python_parser.AtomIdContext ctx) {
         int    line = ctx.getStart().getLine();
         String name = ctx.IDENTIFIER().getText();
-        // سجّل الاستخدام مركزياً
+
         symbolTable.recordUsage(name, line);
         return new IdentifierNode(line, name);
     }
@@ -618,9 +568,6 @@ public class PythonASTVisitor extends python_parserBaseVisitor<Node> {
                 (ExprNode) visit(ctx.postfix()), (ExprNode) visit(ctx.index));
     }
 
-    // ══════════════════════════════════════════════════════════
-    // FUNC CALL — كان ناقص! يجب إرجاع FuncCallNode مع الـ args
-    // ══════════════════════════════════════════════════════════
     @Override
     public Node visitFuncCall(python_parser.FuncCallContext ctx) {
         int line = ctx.getStart().getLine();
@@ -641,12 +588,9 @@ public class PythonASTVisitor extends python_parserBaseVisitor<Node> {
             }
         }
 
-        return new FuncCallNode(line, targetNode, args); // ← الإصلاح
+        return new FuncCallNode(line, targetNode, args);
     }
 
-    // ══════════════════════════════════════════════════════════
-    // LAMBDA
-    // ══════════════════════════════════════════════════════════
     @Override
     public Node visitPrimLambda(python_parser.PrimLambdaContext ctx) {
         int line = ctx.getStart().getLine();
@@ -662,10 +606,8 @@ public class PythonASTVisitor extends python_parserBaseVisitor<Node> {
         symbolTable.free();
         return new LambdaExprNode(line, lambdaParams, bodyNode);
     }
-
-    // ══════════════════════════════════════════════════════════
     // ARGS
-    // ══════════════════════════════════════════════════════════
+
     @Override
     public Node visitKwArg(python_parser.KwArgContext ctx) {
         return new KwArgNode(ctx.getStart().getLine(),
@@ -677,9 +619,9 @@ public class PythonASTVisitor extends python_parserBaseVisitor<Node> {
         return visit(ctx.value);
     }
 
-    // ══════════════════════════════════════════════════════════
+
     // COLLECTIONS
-    // ══════════════════════════════════════════════════════════
+
     @Override
     public Node visitListLit(python_parser.ListLitContext ctx) {
         int line = ctx.getStart().getLine();
@@ -749,27 +691,24 @@ public class PythonASTVisitor extends python_parserBaseVisitor<Node> {
         return new RangeNode(line, args);
     }
 
-    // ══════════════════════════════════════════════════════════
+
     // LITERALS
-    // ══════════════════════════════════════════════════════════
+
     @Override public Node visitLitNum(python_parser.LitNumContext ctx)   { return new NumberNode(ctx.getStart().getLine(),  ctx.NUMBER().getText()); }
     @Override public Node visitLitStr(python_parser.LitStrContext ctx)   { return new StringNode(ctx.getStart().getLine(),  ctx.STRING().getText()); }
     @Override public Node visitLitTrue(python_parser.LitTrueContext ctx) { return new BooleanNode(ctx.getStart().getLine(), true); }
     @Override public Node visitLitFalse(python_parser.LitFalseContext ctx){ return new BooleanNode(ctx.getStart().getLine(), false); }
     @Override public Node visitLitNull(python_parser.LitNullContext ctx)  { return new NullNode(ctx.getStart().getLine()); }
 
-    // ══════════════════════════════════════════════════════════
-    // GROUPED EXPR
-    // ══════════════════════════════════════════════════════════
+
+
     @Override
     public Node visitPrimGrouped(python_parser.PrimGroupedContext ctx) {
         return visit(ctx.inner);
     }
 
-    // ══════════════════════════════════════════════════════════
-    // PASSTHROUGHS
-    // ══════════════════════════════════════════════════════════
-    @Override public Node visitPrimLiteral(python_parser.PrimLiteralContext ctx)     { return visit(ctx.literal()); }
+    @Override public Node visitPrimLiteral(python_parser.PrimLiteralContext ctx)     {
+        return visit(ctx.literal()); }
     @Override public Node visitPrimPostfix(python_parser.PrimPostfixContext ctx)     { return visit(ctx.postfix()); }
     @Override public Node visitPrimCollection(python_parser.PrimCollectionContext ctx){ return visit(ctx.collection()); }
     @Override public Node visitExprPassthrough(python_parser.ExprPassthroughContext ctx) { return visit(ctx.orExpr()); }
