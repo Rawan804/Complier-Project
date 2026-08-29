@@ -269,9 +269,23 @@ public class SemanticAnalyzer {
     private String analyzeBinary(BinaryExprNode node) {
         String leftType = analyzeExpr(node.getLeft());
         String rightType = analyzeExpr(node.getRight());
-        if (node.getOperator().equals("-") || node.getOperator().equals("*") || node.getOperator().equals("/")) {
-            if (leftType.equals(TYPE_STRING) || rightType.equals(TYPE_STRING)) {
-                error("Unsupported operand type(s) for " + node.getOperator() + ": '" + leftType + "' and '" + rightType + "'", node.getLine());
+        if (node.getOperator().equals("+")
+                || node.getOperator().equals("-")
+                || node.getOperator().equals("*")
+                || node.getOperator().equals("/")) {
+
+            if ((leftType.equals(TYPE_STRING) && rightType.equals(TYPE_INT))
+                    || (leftType.equals(TYPE_INT) && rightType.equals(TYPE_STRING))) {
+
+                error(
+                        "Type Error: Cannot operate '"
+                                + leftType
+                                + "' with '"
+                                + rightType
+                                + "'",
+                        node.getLine()
+                );
+
                 return TYPE_ANY;
             }
         }
