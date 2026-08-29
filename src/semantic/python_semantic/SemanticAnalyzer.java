@@ -75,10 +75,7 @@ public class SemanticAnalyzer {
         for (StmtNode stmt : block.getStatements())
             analyzeStmt(stmt);
     }
-
-    // ══════════════════════════════════════════════
-    // ASSIGN — التحقق وتحديث الأنواع تتابعياً
-    // ══════════════════════════════════════════════
+    
     private void analyzeAssign(AssignStmtNode node) {
         String exprType = analyzeExpr(node.getValue());
 
@@ -97,11 +94,9 @@ public class SemanticAnalyzer {
                     }
                 }
             } else {
-                // هنا الفحص الجديد عند الإسناد:
                 if (symbolTable.existsAnywhereInProgram(varName)) {
                     error("Scope Error: Cannot assign to variable '" + varName + "' because it is outside the current scope", node.getLine());
                 } else {
-                    // إذا كان متغير جديد تماماً في السكوب الحالي (قم بتسجيله بالـ SymbolTable إذا لزم الأمر حسب منطق الـ Builder لديك)
                     // symbolTable.insert(varName, ...);
                 }
             }
@@ -110,25 +105,20 @@ public class SemanticAnalyzer {
             analyzeExpr(node.getTarget());
         }
     }
-    // ══════════════════════════════════════════════
     // FUNCTION
     private void analyzeFunc(FunctionDefNode node) {
-        // ---- الفحص الجديد: كشف تكرار اسم الدالة في نفس النطاق ----
-        // نبحث في السكوب الحالي (الذي نحن فيه الآن قبل الدخول للدالة)
+
         SymbolRow existingSymbol = symbolTable.lookupCurrentScope(node.getName());
 
-        // إذا وجدنا رمزاً بنفس الاسم، وكان هذا الرمز يمثل دالة تم فحصها وزيارتها مسبقاً
+    
         if (existingSymbol != null && "function".equals(existingSymbol.getType()) && visitedVariables.contains(node.getName())) {
             error("Duplicate Function Error: Function '" + node.getName() + "' is already defined in this scope", node.getLine());
         }
-
-        // تسجيل اسم الدالة الحالية في الـ visited لتجنب تكرار الخطأ مع نفسها وللتحقق من القادم
         visitedVariables.add(node.getName());
         boolean prevInsideFunction = insideFunction;
         String prevFunction = currentFunction;
         insideFunction = true;
         currentFunction = node.getName();
-        // استعادة السكوب المحفوظ مسبقاً بالـ Visitor
         symbolTable.reActivateScope("function:" + node.getName());
         if (node.getBody() != null)
             analyzeBlock(node.getBody());
@@ -136,20 +126,14 @@ public class SemanticAnalyzer {
         insideFunction = prevInsideFunction;
         currentFunction = prevFunction;
     }
-
-    // ══════════════════════════════════════════════
     // RETURN
-    // ══════════════════════════════════════════════
     private void analyzeReturn(ReturnStmtNode node) {
         if (!insideFunction)
             error("'return' outside function", node.getLine());
         if (node.getValue() != null)
             analyzeExpr(node.getValue());
     }
-
-    // ══════════════════════════════════════════════
     // IF
-    // ══════════════════════════════════════════════
     private void analyzeIf(IfStmtNode node) {
         analyzeExpr(node.getIfCondition());
         analyzeBlock(node.getIfBody());
@@ -285,8 +269,6 @@ public class SemanticAnalyzer {
     private String analyzeBinary(BinaryExprNode node) {
         String leftType = analyzeExpr(node.getLeft());
         String rightType = analyzeExpr(node.getRight());
-
-        // فحص تضارب أنواع العمليات (Operational Type Mismatch)
         if (node.getOperator().equals("-") || node.getOperator().equals("*") || node.getOperator().equals("/")) {
             if (leftType.equals(TYPE_STRING) || rightType.equals(TYPE_STRING)) {
                 error("Unsupported operand type(s) for " + node.getOperator() + ": '" + leftType + "' and '" + rightType + "'", node.getLine());
@@ -310,13 +292,9 @@ public class SemanticAnalyzer {
     private void analyzeIndex(IndexAccessNode node) {
         String targetType = analyzeExpr(node.getTarget());
         String indexType = analyzeExpr(node.getIndex());
-
-        // 1. فحص هل المستهدف يدعم الـ Indexing أصلاً؟
         if (targetType.equals(TYPE_INT) || targetType.equals(TYPE_FLOAT) || targetType.equals(TYPE_BOOL)) {
             error("Type Error: '" + targetType + "' object is not subscriptable", node.getLine());
         }
-
-        // 2. فحص إضافي: إذا كان المستهدف list أو str، يجب أن يكون الـ index عبارة عن int
         if ((targetType.equals("list") || targetType.equals(TYPE_STRING)) && !indexType.equals(TYPE_INT) && !indexType.equals(TYPE_ANY)) {
             error("Type Error: List/String indices must be integers, not '" + indexType + "'", node.getLine());
         }
