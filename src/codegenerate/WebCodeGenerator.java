@@ -14,7 +14,6 @@ public class WebCodeGenerator {
     private final StringBuilder out = new StringBuilder();
     private int indentLevel = 0;
 
-    // ⬇️ جديد: مكدس نطاقات (Scopes) للمتغيرات أثناء التوليد
     private final Deque<Map<String, Object>> scopes = new ArrayDeque<>();
     private void emit(String text) {
         out.append(text);
@@ -24,7 +23,7 @@ public class WebCodeGenerator {
         indentLevel = 0;
         scopes.clear();
         scopes.push(new HashMap<>(contextValues));
-        this.routeFileMap = routeFileMap;   // ⬅️ جديد
+        this.routeFileMap = routeFileMap;
 
         if (root instanceof DocumentNode doc) {
             emit("<!DOCTYPE html>\n");
@@ -36,7 +35,6 @@ public class WebCodeGenerator {
         }
         return out.toString();
     }
-    /** يحل url_for('route_name', ...) لاسم الملف الفعلي */
     private String resolveUrlFor(String expr) {
         java.util.regex.Matcher m = java.util.regex.Pattern.compile(
                 "url_for\\(\\s*['\"]([a-zA-Z_][a-zA-Z0-9_]*)['\"](.*)\\)"
@@ -45,9 +43,7 @@ public class WebCodeGenerator {
         if (!m.find()) return null;
 
         String routeName = m.group(1);
-        String argsPart = m.group(2); // كل شي بعد اسم الـ route، مثلاً: ", product_id=product.id"
-
-        // معالجة static
+        String argsPart = m.group(2);
         if (routeName.equals("static")) {
             java.util.regex.Matcher fm = java.util.regex.Pattern.compile(
                     "filename\\s*=\\s*['\"]([^'\"]+)['\"]"
@@ -57,7 +53,6 @@ public class WebCodeGenerator {
             }
         }
 
-        // مسارات سيرفر Java (إضافة / حذف / عرض)
         if (routeName.equals("add_product")) {
             return "/add";
         }
@@ -65,7 +60,6 @@ public class WebCodeGenerator {
             return "/";
         }
 
-        // معالجة أي route فيه *_id ديناميكي
         java.util.regex.Matcher idMatch = java.util.regex.Pattern.compile(
                 "(\\w+_id)\\s*=\\s*([a-zA-Z_][a-zA-Z0-9_.]*)"
         ).matcher(argsPart);
@@ -110,12 +104,10 @@ public class WebCodeGenerator {
         }
     }
 
-    // ⬇️⬇️⬇️ الجزء الجديد بالكامل: استبدال {{ expr }} بقيمته الحقيقية
 
     private void generateJinjaExpr(JinjaExprNode expr) {
         String raw = expr.getExpression().trim();
 
-        // url_for(...) مو جزء من context data - نتركها متل ما هي
         if (raw.contains("url_for(")) {
             String resolvedFile = resolveUrlFor(raw);
             out.append(resolvedFile != null ? resolvedFile : raw);
@@ -125,7 +117,6 @@ public class WebCodeGenerator {
         Object resolved = resolveExpression(raw);
 
         if (resolved == null) {
-            // ما قدرنا نحلها (فلتر معقد، أو متغير غير معروف) - نتركها متل ما هي كـ fallback آمن
             out.append("{{ ").append(raw).append(" }}");
         } else {
             String val = stringifyValue(resolved);
@@ -136,7 +127,6 @@ public class WebCodeGenerator {
         }
     }
 
-    /** يحوّل اسم ملف صورة إلى مسار static/images/ (مثل Flask static folder) */
     private String toStaticImagePath(String value) {
         if (value == null || value.isEmpty()) return value;
         if (value.startsWith("http://") || value.startsWith("https://")
@@ -193,7 +183,6 @@ public class WebCodeGenerator {
         scopes.pop();
     }
 
-    /** يحل expression زي "product.name" لقيمته الحقيقية بالمرور على النطاقات من الأقرب للأبعد */
     private Object resolveExpression(String expr) {
         if (expr == null || expr.isBlank()) return null;
         if (expr.contains("|") || expr.contains("(")) return null; // فلاتر/دوال معقدة - غير مدعومة حاليًا
@@ -237,7 +226,6 @@ public class WebCodeGenerator {
         return String.valueOf(value);
     }
 
-    // ⬆️⬆️⬆️ نهاية الجزء الجديد
 
     private void generateElement(ElementNode el) {
         indent();

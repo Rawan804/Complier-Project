@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>المنتجات</title>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f7fa;
+            text-align: right;
+        }
+
+        h1 {
+            color: #2c3e50;
+            padding: 20px;
+            border: 0 0 4px 0 solid #3498db;
+            font-size: 32px;
+            font-weight: bold;
+            background-color: white;
+            text-align: center;
+        }
+
+        ul {
+            padding: 0;
+            margin: 10px;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 20px;
+        }
+
+        li {
+            background-color: white;
+            padding: 15px;
+            border: 2px solid #3498db;
+            background-color: #ffffff;
+            height: 400px;
+            width: 200px;
+            text-align: right;
+            position: relative;
+        }
+
+        li:hover {
+            background-color: #e8f4fc;
+            border: 2px solid #2980b9;
+        }
+
+        a:hover {
+            color: white;
+            background-color: #3498db;
+        }
+
+        .delete-form {
+            padding: 5px;
+            margin: 50px 0;
+            border: 10px;
+            background-color: transparent;
+            display: inline-block;
+            width: auto;
+            position: absolute;
+        }
+
+        .btn-delete {
+            background-color: red;
+            color: white;
+            padding: 5px 8px;
+            font-size: 14px;
+            border: 1px solid darkred;
+            margin: 0;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-delete:hover {
+            background-color: darkred;
+            border: 1px solid #8b0000;
+        }
+
+        .btn-add {
+            background-color: green;
+            color: white;
+            padding: 8px 15px;
+            font-size: 16px;
+            border: 1px solid darkgreen;
+            margin: 10px;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-add:hover {
+            background-color: darkgreen;
+            border: 1px solid #006400;
+        }
+
+        form:not(.delete-form) {
+            background-color: white;
+            padding: 30px;
+            border: 2px solid #3498db;
+            margin: 30px auto;
+            width: 500px;
+            background-color: #ffffff;
+            text-align: right;
+        }
+
+        form input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0 20px 0;
+            border: 1px solid #ddd;
+            font-size: 16px;
+            background-color: white;
+        }
+
+        form input:focus {
+            border: 1px solid #3498db;
+            background-color: #f0f8ff;
+        }
+
+        button:not(.btn-delete) {
+            background-color: #3498db;
+            color: white;
+            padding: 12px 25px;
+            font-size: 16px;
+            font-weight: bold;
+            border: 1px solid #2980b9;
+            margin: 20px auto;
+            display: block;
+            text-align: center;
+        }
+
+        button:not(.btn-delete):hover {
+            background-color: #2980b9;
+            border: 1px solid #1c5a7a;
+        }
+        button:not(.btn-delete):hover {
+                    background-color: #2980b9;
+                    border: 1px solid #1c5a7a;
+                }
+
+        button a {
+            color: white;
+            display: block;
+            padding: 10px 20px;
+        }
+
+        img {
+            height: 300px;
+            width: 200px;
+            display: block;
+            margin: 0 auto 15px auto;
+        }
+
+        p {
+            color: #2c3e50;
+            margin: 15px 0;
+            font-size: 16px;
+            padding: 8px;
+        }
+
+        .price {
+            color: #e74c3c;
+            font-size: 20px;
+            font-weight: bold;
+            margin: 20px 0 15px 0;
+            background-color: #fff5f5;
+            padding: 12px;
+            border: 1px solid #e74c3c;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div>
+        <h1>قائمة المنتجات</h1>
+    </div>
+
+    <div>
+        <br />
+    </div>
+
+    <div>
+        <ul>
+            {% for product in products %}
+            <li>
+                <div>
+                    <a href="{{ url_for('details', product_id=product.id) }}">
+                        <img src="{{ url_for('static', filename='images/' + product.image) }}" />
+                        <span>{{ product.name }}</span>
+                    </a>
+
+                    <form class="delete-form"
+                          action="{{ url_for('delete_product_route', product_id=product.id) }}"
+                          method="post">
+                        <button class="btn-delete" type="submit">
+                            🗑
+                        </button>
+                    </form>
+
+                    <span> - </span>
+                    <span>${{ product.price }}</span>
+
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div>
+        <button>
+            <a href="{{ url_for('add_product') }}">
+                أضف منتج جديد
+            </a>
+        </button>
+    </div>
+
+</body>
+
+</html>
