@@ -14,6 +14,10 @@ public class WebCodeGenerator {
     private final StringBuilder out = new StringBuilder();
     private int indentLevel = 0;
 
+<<<<<<< HEAD
+=======
+    // ⬇️ جديد: مكدس نطاقات (Scopes) للمتغيرات أثناء التوليد
+>>>>>>> 9a836d3 (add test file for python)
     private final Deque<Map<String, Object>> scopes = new ArrayDeque<>();
     private void emit(String text) {
         out.append(text);
@@ -23,7 +27,11 @@ public class WebCodeGenerator {
         indentLevel = 0;
         scopes.clear();
         scopes.push(new HashMap<>(contextValues));
+<<<<<<< HEAD
         this.routeFileMap = routeFileMap;
+=======
+        this.routeFileMap = routeFileMap;   // ⬅️ جديد
+>>>>>>> 9a836d3 (add test file for python)
 
         if (root instanceof DocumentNode doc) {
             emit("<!DOCTYPE html>\n");
@@ -35,6 +43,10 @@ public class WebCodeGenerator {
         }
         return out.toString();
     }
+<<<<<<< HEAD
+=======
+    /** يحل url_for('route_name', ...) لاسم الملف الفعلي */
+>>>>>>> 9a836d3 (add test file for python)
     private String resolveUrlFor(String expr) {
         java.util.regex.Matcher m = java.util.regex.Pattern.compile(
                 "url_for\\(\\s*['\"]([a-zA-Z_][a-zA-Z0-9_]*)['\"](.*)\\)"
@@ -43,7 +55,13 @@ public class WebCodeGenerator {
         if (!m.find()) return null;
 
         String routeName = m.group(1);
+<<<<<<< HEAD
         String argsPart = m.group(2);
+=======
+        String argsPart = m.group(2); // كل شي بعد اسم الـ route، مثلاً: ", product_id=product.id"
+
+        // معالجة static
+>>>>>>> 9a836d3 (add test file for python)
         if (routeName.equals("static")) {
             java.util.regex.Matcher fm = java.util.regex.Pattern.compile(
                     "filename\\s*=\\s*['\"]([^'\"]+)['\"]"
@@ -53,6 +71,10 @@ public class WebCodeGenerator {
             }
         }
 
+<<<<<<< HEAD
+=======
+        // مسارات سيرفر Java (إضافة / حذف / عرض)
+>>>>>>> 9a836d3 (add test file for python)
         if (routeName.equals("add_product")) {
             return "/add";
         }
@@ -60,6 +82,10 @@ public class WebCodeGenerator {
             return "/";
         }
 
+<<<<<<< HEAD
+=======
+        // معالجة أي route فيه *_id ديناميكي
+>>>>>>> 9a836d3 (add test file for python)
         java.util.regex.Matcher idMatch = java.util.regex.Pattern.compile(
                 "(\\w+_id)\\s*=\\s*([a-zA-Z_][a-zA-Z0-9_.]*)"
         ).matcher(argsPart);
@@ -104,10 +130,18 @@ public class WebCodeGenerator {
         }
     }
 
+<<<<<<< HEAD
+=======
+    // ⬇️⬇️⬇️ الجزء الجديد بالكامل: استبدال {{ expr }} بقيمته الحقيقية
+>>>>>>> 9a836d3 (add test file for python)
 
     private void generateJinjaExpr(JinjaExprNode expr) {
         String raw = expr.getExpression().trim();
 
+<<<<<<< HEAD
+=======
+        // url_for(...) مو جزء من context data - نتركها متل ما هي
+>>>>>>> 9a836d3 (add test file for python)
         if (raw.contains("url_for(")) {
             String resolvedFile = resolveUrlFor(raw);
             out.append(resolvedFile != null ? resolvedFile : raw);
@@ -117,6 +151,10 @@ public class WebCodeGenerator {
         Object resolved = resolveExpression(raw);
 
         if (resolved == null) {
+<<<<<<< HEAD
+=======
+            // ما قدرنا نحلها (فلتر معقد، أو متغير غير معروف) - نتركها متل ما هي كـ fallback آمن
+>>>>>>> 9a836d3 (add test file for python)
             out.append("{{ ").append(raw).append(" }}");
         } else {
             String val = stringifyValue(resolved);
@@ -127,6 +165,10 @@ public class WebCodeGenerator {
         }
     }
 
+<<<<<<< HEAD
+=======
+    /** يحوّل اسم ملف صورة إلى مسار static/images/ (مثل Flask static folder) */
+>>>>>>> 9a836d3 (add test file for python)
     private String toStaticImagePath(String value) {
         if (value == null || value.isEmpty()) return value;
         if (value.startsWith("http://") || value.startsWith("https://")
@@ -183,6 +225,10 @@ public class WebCodeGenerator {
         scopes.pop();
     }
 
+<<<<<<< HEAD
+=======
+    /** يحل expression زي "product.name" لقيمته الحقيقية بالمرور على النطاقات من الأقرب للأبعد */
+>>>>>>> 9a836d3 (add test file for python)
     private Object resolveExpression(String expr) {
         if (expr == null || expr.isBlank()) return null;
         if (expr.contains("|") || expr.contains("(")) return null; // فلاتر/دوال معقدة - غير مدعومة حاليًا
@@ -226,6 +272,10 @@ public class WebCodeGenerator {
         return String.valueOf(value);
     }
 
+<<<<<<< HEAD
+=======
+    // ⬆️⬆️⬆️ نهاية الجزء الجديد
+>>>>>>> 9a836d3 (add test file for python)
 
     private void generateElement(ElementNode el) {
         indent();
